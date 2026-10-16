@@ -1,0 +1,24 @@
+{
+  "_comment": "Globnetics Branch Naming & Feature Workflow: Enforces standard branch naming conventions across the organization (e.g., feature/*, bugfix/*, hotfix/*, chore/*, refactor/*). Disallows creation of non-conforming branches while allowing developers to rebase and delete their own working branches. ",
+  "name": "Globnetics - Feature Branch Standards",
+  "target": "branch",
+  "enforcement": "evaluate",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/*"],
+      "exclude": ["~DEFAULT_BRANCH", "refs/heads/release/*", "refs/heads/staging"]
+    }
+  },
+  "rules": [
+    {
+      "type": "branch_name_pattern",
+      "parameters": {
+        "name": "Branch naming convention: (feature|bugfix|hotfix|chore|refactor|docs)/*",
+        "negate": false,
+        "operator": "regex",
+        "pattern": "^(feature|bugfix|hotfix|chore|refactor|docs)/[a-z0-9._-]+$"
+      }
+    }
+  ]
+}

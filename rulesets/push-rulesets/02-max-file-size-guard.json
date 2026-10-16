@@ -1,0 +1,16 @@
+{
+  "_comment": "Globnetics Push Protection - Max File Size Guard: Blocks accidental commits of large files exceeding 50 MB (52,428,800 bytes). Prevents Git repository bloat from database dumps, dataset files, and large binaries that should be stored in Git LFS or external artifact storage.",
+  "name": "Globnetics - Push Protection: Max File Size (50MB)",
+  "target": "push",
+  "enforcement": "evaluate",
+  "bypass_actors": [],
+  "conditions": {},
+  "rules": [
+    {
+      "type": "max_file_size",
+      "parameters": {
+        "max_file_size": 52428800
+      }
+    }
+  ]
+}

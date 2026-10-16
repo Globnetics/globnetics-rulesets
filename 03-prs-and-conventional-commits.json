@@ -1,0 +1,34 @@
+{
+  "_comment": "PR and Conventional Commits ruleset (Evaluate mode): Protects default branch (~DEFAULT_BRANCH). Requires 1 PR approval, stale review dismissal, conversation resolution, and enforces Conventional Commits format (feat, fix, chore, etc.) via regex on all commit messages.",
+  "name": "PRs + conventional commits",
+  "target": "branch",
+  "enforcement": "evaluate",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": ["~DEFAULT_BRANCH"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1,
+        "dismiss_stale_reviews_on_push": true,
+        "require_code_owner_review": false,
+        "require_last_push_approval": true,
+        "required_review_thread_resolution": true
+      }
+    },
+    {
+      "type": "commit_message_pattern",
+      "parameters": {
+        "name": "Conventional Commits",
+        "negate": false,
+        "operator": "regex",
+        "pattern": "^(feat|fix|docs|refactor|perf|test|build|ci|chore|revert)(\\([a-z0-9._-]+\\))?!?: .+"
+      }
+    }
+  ]
+}

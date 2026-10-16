@@ -1,0 +1,31 @@
+{
+  "_comment": "Organization-wide baseline ruleset (Evaluate mode): Applies across all repositories (~ALL) to protect default branches (~DEFAULT_BRANCH). Requires 1 PR approval with conversation resolution and stale review dismissal, while blocking branch deletions and force-pushes.",
+  "name": "Org baseline: protect default branch",
+  "target": "branch",
+  "enforcement": "evaluate",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": ["~DEFAULT_BRANCH"],
+      "exclude": []
+    },
+    "repository_name": {
+      "include": ["~ALL"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1,
+        "dismiss_stale_reviews_on_push": true,
+        "require_code_owner_review": false,
+        "require_last_push_approval": true,
+        "required_review_thread_resolution": true
+      }
+    }
+  ]
+}

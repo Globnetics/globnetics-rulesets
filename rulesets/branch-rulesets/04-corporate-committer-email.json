@@ -1,0 +1,24 @@
+{
+  "_comment": "Globnetics Committer Email Compliance: Enforces that all commit authors use a verified company email address (@globnetics.com). Blocks commits with personal emails (e.g., @gmail.com) to guarantee IP ownership, audit trails.",
+  "name": "Globnetics - Corporate Committer Email Policy",
+  "target": "branch",
+  "enforcement": "evaluate",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": ["~DEFAULT_BRANCH", "refs/heads/feature/*", "refs/heads/release/*"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "commit_author_email_pattern",
+      "parameters": {
+        "name": "Require @globnetics.com author email",
+        "negate": false,
+        "operator": "regex",
+        "pattern": "^[a-zA-Z0-9._%+-]+@globnetics\\.com$"
+      }
+    }
+  ]
+}
