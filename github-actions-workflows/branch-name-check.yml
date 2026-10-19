@@ -1,0 +1,25 @@
+name: "Branch Naming Rule"
+
+on:
+  pull_request:
+    types: [opened, reopened, edited, synchronize]
+
+jobs:
+  validate-branch-name:
+    name: "Validate Branch Name"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check Branch Name Pattern"
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          PATTERN="^(feature|bugfix|hotfix|chore|refactor|docs)/[a-zA-Z0-9._-]+$"
+          echo "Checking branch name: $HEAD_REF"
+          if [[ ! "$HEAD_REF" =~ $PATTERN ]]; then
+            echo "::error title=Invalid Branch Name::Branch '$HEAD_REF' violates Globnetics naming conventions."
+            echo "Allowed branch prefixes: feature/, bugfix/, hotfix/, chore/, refactor/, docs/"
+            echo "Example: feature/GLOB-123-user-authentication"
+            exit 1
+          else
+            echo "Branch name '$HEAD_REF' is valid."
+          fi

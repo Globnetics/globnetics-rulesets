@@ -1,0 +1,45 @@
+name: "SemVer Release Tag Guard"
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  validate-tag:
+    name: "Validate SemVer Tag Format & Source"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Validate Tag Name Pattern"
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          PATTERN="^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$"
+          echo "Validating tag: $TAG_NAME"
+          if [[ ! "$TAG_NAME" =~ $PATTERN ]]; then
+            echo "::error title=Invalid Tag Format::Tag '$TAG_NAME' does not adhere to Semantic Versioning (vMAJOR.MINOR.PATCH)."
+            echo "Examples of valid tags: v1.0.0, v2.1.3, v1.0.0-rc.1"
+            exit 1
+          else
+            echo "Tag '$TAG_NAME' is a valid SemVer tag."
+          fi
+
+      - name: "Verify Tag Belongs to Default Branch"
+        run: |
+          git fetch origin main || git fetch origin master || true
+          DEFAULT_BRANCH="main"
+          if ! git rev-parse --verify origin/main >/dev/null 2>&1; then
+            DEFAULT_BRANCH="master"
+          fi
+
+          TAG_COMMIT=$(git rev-list -n 1 "${{ github.ref }}")
+          if git merge-base --is-ancestor "$TAG_COMMIT" "origin/$DEFAULT_BRANCH"; then
+            echo "Verified: Tag commit $TAG_COMMIT belongs to $DEFAULT_BRANCH."
+          else
+            echo "::warning title=Tag Not on Default Branch::Tag commit $TAG_COMMIT is not an ancestor of $DEFAULT_BRANCH. Official releases should be tagged from $DEFAULT_BRANCH."
+          fi

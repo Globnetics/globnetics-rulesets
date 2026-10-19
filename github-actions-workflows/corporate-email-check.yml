@@ -1,0 +1,43 @@
+name: "Corporate Committer Email Guard"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  verify-author-email:
+    name: "Verify @globnetics.com Committer Email"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Inspect Commit Author Emails"
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          echo "Inspecting commits between $BASE_SHA and $HEAD_SHA..."
+          
+          ALLOWED_DOMAIN="globnetics.com"
+          FAILED=0
+
+          while IFS='|' read -r HASH AUTHOR_NAME AUTHOR_EMAIL; do
+            if [[ ! "$AUTHOR_EMAIL" =~ ^[a-zA-Z0-9._%+-]+@${ALLOWED_DOMAIN}$ ]]; then
+              echo "::error title=Unauthorized Committer Email::Commit $HASH by '$AUTHOR_NAME' has unauthorized email: $AUTHOR_EMAIL. Must be an @$ALLOWED_DOMAIN address."
+              FAILED=1
+            else
+              echo "Verified commit $HASH ($AUTHOR_EMAIL)"
+            fi
+          done < <(git log --no-merges --format="%h|%an|%ae" "$BASE_SHA..$HEAD_SHA")
+
+          if [ $FAILED -ne 0 ]; then
+            echo ""
+            echo "To fix your commit author email locally, run:"
+            echo "  git config user.email \"yourname@$ALLOWED_DOMAIN\""
+            echo "  git commit --amend --reset-author --no-edit"
+            echo "  git push --force-with-lease"
+            exit 1
+          fi
+          echo "All commit author emails verified successfully."

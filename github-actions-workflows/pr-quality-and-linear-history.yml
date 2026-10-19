@@ -1,0 +1,41 @@
+name: "PR Quality & Linear History Guard"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  quality-gate:
+    name: "Linear History & PR Quality Gate"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Check for Merge Commits (Enforce Linear History)"
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          MERGE_COMMITS=$(git rev-list --merges "$BASE_SHA..$HEAD_SHA")
+          
+          if [ -n "$MERGE_COMMITS" ]; then
+            echo "::error title=Merge Commits Detected::PR contains merge commits. Globnetics enforces clean linear history. Please rebase your branch on top of the base branch."
+            echo "Run locally:"
+            echo "  git fetch origin"
+            echo "  git rebase origin/main"
+            echo "  git push --force-with-lease"
+            exit 1
+          fi
+          echo "Linear history verified: No merge commits detected in PR."
+
+      - name: "Validate PR Description"
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if [ -z "$BODY" ] || [ ${#BODY} -lt 15 ]; then
+            echo "::warning title=Short or Missing PR Description::Please provide a meaningful PR description explaining the changes and testing performed."
+          else
+            echo "PR description check passed (${#BODY} characters)."
+          fi
